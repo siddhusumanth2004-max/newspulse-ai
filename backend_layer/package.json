@@ -1,0 +1,16 @@
+{
+  "name": "newspulse-backend",
+  "version": "1.0.0",
+  "description": "Backend API Gateway for NewsPulse AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0"
+  }
+}

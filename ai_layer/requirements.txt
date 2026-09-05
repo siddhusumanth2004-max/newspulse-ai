@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-dotenv
+pydantic
+anthropic
+
+feedparser
+requests
+
+sentence-transformers
+numpy
+
+langchain
+langchain-anthropic
