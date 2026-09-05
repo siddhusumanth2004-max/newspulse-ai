@@ -1,0 +1,51 @@
+* {
+  box-sizing: border-box;
+}
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+body {
+  margin: 0;
+
+  min-height: 100vh;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  background: #f4f9ff;
+
+  color: #10213d;
+
+  -webkit-font-smoothing:
+    antialiased;
+}
+
+
+button,
+select {
+  font-family: inherit;
+}
+
+
+button {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+
+a {
+  color: inherit;
+}
