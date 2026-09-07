@@ -1,43 +1,3812 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+<head>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+  <meta charset="utf-8" />
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
+
+  <meta
+    name="theme-color"
+    content="#020611"
+  />
+
+  <meta
+    name="description"
+    content="NewsPulse AI - Living News Intelligence"
+  />
+
+  <title>
+    NewsPulse AI | Living News Intelligence
+  </title>
+
+
+  <!-- =====================================================
+       EXISTING ROYAL UI
+       ===================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="%PUBLIC_URL%/royal-enhancements.css"
+  />
+
+
+  <style>
+
+    /* =====================================================
+       DESIGN TOKENS
+       ===================================================== */
+
+    :root {
+
+      --np-bg:
+        #01040b;
+
+      --np-blue:
+        #4169e1;
+
+      --np-blue-light:
+        #7393ff;
+
+      --np-electric:
+        #47b1ff;
+
+      --np-gold:
+        #d7b65d;
+
+      --np-green:
+        #55e6a5;
+
+      --np-white:
+        #f7f9ff;
+
+      --np-muted:
+        #8298c2;
+
+    }
+
+
+
+    /* =====================================================
+       GLOBAL FULLSCREEN
+       ===================================================== */
+
+    .np-fullscreen {
+
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 999999;
+
+      overflow: hidden;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       REFRESH ANIMATION
+       ROYAL INTELLIGENCE PORTAL
+       =====================================================
+       ===================================================== */
+
+    #np-refresh-loader {
+
+      background:
+
+        radial-gradient(
+          circle at 50% 47%,
+          rgba(45, 80, 175, 0.25),
+          transparent 23%
+        ),
+
+        radial-gradient(
+          circle at 50% 50%,
+          #07152e,
+          #020712 48%,
+          #000208 100%
+        );
+
+      opacity: 1;
+
+      visibility: visible;
+
+      transition:
+        opacity 0.7s ease,
+        visibility 0.7s ease;
+
+    }
+
+
+    #np-refresh-loader.np-exit {
+
+      opacity: 0;
+
+      visibility: hidden;
+
+      pointer-events: none;
+
+    }
+
+
+
+    /* GRID */
+
+    .np-refresh-grid {
+
+      position: absolute;
+
+      inset: -25%;
+
+      opacity: 0.22;
+
+      background-image:
+
+        linear-gradient(
+          rgba(94, 132, 255, 0.07) 1px,
+          transparent 1px
+        ),
+
+        linear-gradient(
+          90deg,
+          rgba(94, 132, 255, 0.07) 1px,
+          transparent 1px
+        );
+
+      background-size:
+        48px 48px;
+
+      transform:
+        perspective(700px)
+        rotateX(63deg)
+        translateY(36%);
+
+      transform-origin:
+        center bottom;
+
+      animation:
+        npGridTravel
+        2.8s linear infinite;
+
+    }
+
+
+
+    /* PARTICLES */
+
+    .np-refresh-particles {
+
+      position: absolute;
+
+      inset: 0;
+
+    }
+
+
+    .np-refresh-particle {
+
+      position: absolute;
+
+      width: 3px;
+
+      height: 3px;
+
+      border-radius: 50%;
+
+      background:
+        #7897ff;
+
+      box-shadow:
+        0 0 10px
+        rgba(103, 139, 255, 0.9);
+
+      animation:
+        npParticleFloat
+        2.2s ease-in-out infinite;
+
+    }
+
+
+    .np-refresh-particle:nth-child(1) {
+      left: 10%;
+      top: 18%;
+    }
+
+    .np-refresh-particle:nth-child(2) {
+      left: 20%;
+      top: 74%;
+      animation-delay: .3s;
+    }
+
+    .np-refresh-particle:nth-child(3) {
+      left: 31%;
+      top: 29%;
+      animation-delay: .6s;
+    }
+
+    .np-refresh-particle:nth-child(4) {
+      left: 42%;
+      top: 84%;
+      animation-delay: .2s;
+    }
+
+    .np-refresh-particle:nth-child(5) {
+      left: 55%;
+      top: 16%;
+      animation-delay: .7s;
+    }
+
+    .np-refresh-particle:nth-child(6) {
+      left: 66%;
+      top: 78%;
+      animation-delay: .45s;
+    }
+
+    .np-refresh-particle:nth-child(7) {
+      left: 78%;
+      top: 25%;
+      animation-delay: .25s;
+    }
+
+    .np-refresh-particle:nth-child(8) {
+
+      left: 89%;
+      top: 70%;
+
+      background:
+        var(--np-gold);
+
+      box-shadow:
+        0 0 12px
+        var(--np-gold);
+
+      animation-delay:
+        .55s;
+
+    }
+
+
+
+    /* PORTAL */
+
+    .np-refresh-content {
+
+      position: relative;
+
+      z-index: 20;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      text-align: center;
+
+    }
+
+
+    .np-refresh-portal {
+
+      position: relative;
+
+      width: 300px;
+
+      height: 300px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      animation:
+        npPortalArrival
+        .8s ease both;
+
+    }
+
+
+    .np-refresh-glow {
+
+      position: absolute;
+
+      width: 255px;
+
+      height: 255px;
+
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(82, 121, 255, .25),
+          rgba(65, 105, 225, .07) 42%,
+          transparent 72%
+        );
+
+      filter:
+        blur(12px);
+
+      animation:
+        npGlowPulse
+        1.3s ease-in-out infinite;
+
+    }
+
+
+    .np-refresh-ring {
+
+      position: absolute;
+
+      border-radius: 50%;
+
+    }
+
+
+    .np-refresh-ring.one {
+
+      width: 245px;
+
+      height: 245px;
+
+      border:
+        1px solid
+        rgba(104, 141, 255, .38);
+
+      animation:
+        npRotate
+        8s linear infinite;
+
+    }
+
+
+    .np-refresh-ring.one::before {
+
+      content: "";
+
+      position: absolute;
+
+      width: 10px;
+
+      height: 10px;
+
+      left: 50%;
+
+      top: -5px;
+
+      border-radius: 50%;
+
+      background:
+        var(--np-blue-light);
+
+      box-shadow:
+        0 0 20px
+        var(--np-blue-light);
+
+    }
+
+
+    .np-refresh-ring.two {
+
+      width: 205px;
+
+      height: 205px;
+
+      border:
+        1px dashed
+        rgba(215, 182, 93, .32);
+
+      animation:
+        npRotateReverse
+        6s linear infinite;
+
+    }
+
+
+    .np-refresh-ring.three {
+
+      width: 160px;
+
+      height: 160px;
+
+      border:
+        1px solid
+        rgba(112, 151, 255, .28);
+
+      animation:
+        npRingBreath
+        1.25s ease-in-out infinite;
+
+    }
+
+
+
+    /* REFRESH CORE */
+
+    .np-refresh-core {
+
+      position: relative;
+
+      z-index: 10;
+
+      width: 108px;
+
+      height: 108px;
+
+      overflow: hidden;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      transform:
+        rotate(45deg);
+
+      border:
+        1px solid
+        rgba(237, 216, 143, .55);
+
+      border-radius:
+        31px;
+
+      background:
+        radial-gradient(
+          circle at 30% 22%,
+          #a4b8ff,
+          #708eff 23%,
+          #4169e1 50%,
+          #223e9a 75%,
+          #0f225d
+        );
+
+      box-shadow:
+
+        0 0 36px
+        rgba(102, 136, 255, .62),
+
+        0 0 85px
+        rgba(65, 105, 225, .36);
+
+      animation:
+        npCoreBreath
+        1.15s ease-in-out infinite;
+
+    }
+
+
+    .np-refresh-core span {
+
+      transform:
+        rotate(-45deg);
+
+      color:
+        white;
+
+      font-size:
+        30px;
+
+      font-weight:
+        900;
+
+    }
+
+
+
+    /* REFRESH TEXT */
+
+    .np-refresh-live {
+
+      color:
+        var(--np-green);
+
+      font-size:
+        7px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        2.3px;
+
+    }
+
+
+    .np-refresh-live::before {
+
+      content: "●";
+
+      margin-right:
+        7px;
+
+      text-shadow:
+        0 0 12px
+        var(--np-green);
+
+    }
+
+
+    .np-refresh-brand {
+
+      margin-top:
+        10px;
+
+      color:
+        white;
+
+      font-size:
+        42px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        -1.5px;
+
+    }
+
+
+    .np-refresh-brand span {
+
+      color:
+        var(--np-gold);
+
+    }
+
+
+    .np-refresh-subtitle {
+
+      margin-top:
+        7px;
+
+      color:
+        #7890bd;
+
+      font-size:
+        7px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        2.8px;
+
+    }
+
+
+
+    .np-refresh-progress {
+
+      position: relative;
+
+      width:
+        min(
+          360px,
+          72vw
+        );
+
+      height: 2px;
+
+      margin-top:
+        20px;
+
+      overflow: hidden;
+
+      border-radius:
+        999px;
+
+      background:
+        rgba(101, 135, 213, .13);
+
+    }
+
+
+    .np-refresh-progress::before {
+
+      content: "";
+
+      position: absolute;
+
+      width: 45%;
+
+      height: 100%;
+
+      left: -50%;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          var(--np-gold),
+          var(--np-blue-light),
+          var(--np-electric),
+          transparent
+        );
+
+      animation:
+        npProgressTravel
+        1.2s linear infinite;
+
+    }
+
+
+    .np-refresh-status {
+
+      margin-top:
+        10px;
+
+      color:
+        #6079a9;
+
+      font-size:
+        6px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        1.7px;
+
+    }
+
+
+
+    /* REFRESH EXIT */
+
+    #np-refresh-loader.np-charge
+    .np-refresh-portal {
+
+      animation:
+        npPortalLaunch
+        .65s ease-in forwards;
+
+    }
+
+
+    .np-refresh-flash {
+
+      position: absolute;
+
+      inset: 0;
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(215, 225, 255, .9),
+          rgba(87, 130, 255, .5) 15%,
+          transparent 48%
+        );
+
+    }
+
+
+    #np-refresh-loader.np-charge
+    .np-refresh-flash {
+
+      animation:
+        npFlash
+        .65s ease forwards;
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       ROLE ANIMATION CONTAINER
+       =====================================================
+       ===================================================== */
+
+    #np-role-loader {
+
+      opacity: 0;
+
+      visibility: hidden;
+
+      pointer-events: none;
+
+      background:
+        rgba(1, 5, 15, .94);
+
+      backdrop-filter:
+        blur(20px);
+
+      transition:
+        opacity .18s ease,
+        visibility .18s ease;
+
+    }
+
+
+    #np-role-loader.np-show {
+
+      opacity: 1;
+
+      visibility: visible;
+
+      pointer-events: auto;
+
+    }
+
+
+    .np-role-scene {
+
+      position: absolute;
+
+      inset: 0;
+
+      display: none;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+
+
+    #np-role-loader[data-role="student"]
+    .np-student-scene {
+
+      display: flex;
+
+    }
+
+
+    #np-role-loader[data-role="developer"]
+    .np-developer-scene {
+
+      display: flex;
+
+    }
+
+
+    #np-role-loader[data-role="researcher"]
+    .np-researcher-scene {
+
+      display: flex;
+
+    }
+
+
+    #np-role-loader[data-role="business"]
+    .np-business-scene {
+
+      display: flex;
+
+    }
+
+
+    #np-role-loader[data-role="general"]
+    .np-general-scene {
+
+      display: flex;
+
+    }
+
+
+
+    /* =====================================================
+       COMMON ROLE CONTENT
+       ===================================================== */
+
+    .np-role-content {
+
+      position: relative;
+
+      z-index: 20;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      text-align: center;
+
+      animation:
+        npRoleEntrance
+        .32s ease both;
+
+    }
+
+
+    .np-role-mini {
+
+      margin-top:
+        12px;
+
+      color:
+        var(--np-gold);
+
+      font-size:
+        7px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        2.2px;
+
+    }
+
+
+    .np-role-title {
+
+      margin-top:
+        7px;
+
+      color:
+        white;
+
+      font-size:
+        clamp(
+          27px,
+          5vw,
+          36px
+        );
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        -1px;
+
+    }
+
+
+    .np-role-status {
+
+      margin-top:
+        10px;
+
+      color:
+        #a6b8db;
+
+      font-size:
+        8px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        1.2px;
+
+    }
+
+
+    .np-role-status::before {
+
+      content: "●";
+
+      margin-right:
+        7px;
+
+      color:
+        var(--np-green);
+
+      text-shadow:
+        0 0 12px
+        var(--np-green);
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       STUDENT ANIMATION
+       ACADEMIC INTELLIGENCE NETWORK
+       =====================================================
+       ===================================================== */
+
+    .np-student-scene {
+
+      background:
+
+        radial-gradient(
+          circle,
+          rgba(67, 104, 225, .20),
+          transparent 45%
+        ),
+
+        #01050f;
+
+    }
+
+
+    .np-academic-system {
+
+      position: relative;
+
+      width: 290px;
+
+      height: 260px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+
+    .np-academic-core {
+
+      position: relative;
+
+      z-index: 8;
+
+      width: 95px;
+
+      height: 95px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      border:
+        1px solid
+        rgba(215, 182, 93, .5);
+
+      border-radius:
+        24px;
+
+      color:
+        white;
+
+      background:
+        linear-gradient(
+          145deg,
+          #728eff,
+          #4169e1,
+          #183680
+        );
+
+      box-shadow:
+        0 0 60px
+        rgba(65, 105, 225, .48);
+
+      animation:
+        npAcademicPulse
+        .8s ease-in-out infinite;
+
+    }
+
+
+    .np-academic-core strong {
+
+      font-size:
+        26px;
+
+    }
+
+
+    .np-academic-orbit {
+
+      position: absolute;
+
+      width: 205px;
+
+      height: 205px;
+
+      border:
+        1px dashed
+        rgba(107, 145, 255, .30);
+
+      border-radius: 50%;
+
+      animation:
+        npRotate
+        5s linear infinite;
+
+    }
+
+
+    .np-academic-node {
+
+      position: absolute;
+
+      padding:
+        6px 9px;
+
+      border:
+        1px solid
+        rgba(116, 151, 255, .30);
+
+      border-radius:
+        7px;
+
+      color:
+        #c7d3ff;
+
+      background:
+        #07152d;
+
+      font-size:
+        6px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        1px;
+
+      box-shadow:
+        0 0 15px
+        rgba(65, 105, 225, .15);
+
+      animation:
+        npAcademicNode
+        1s ease-in-out infinite;
+
+    }
+
+
+    .np-academic-node.one {
+
+      top: 18px;
+
+      left: 110px;
+
+    }
+
+
+    .np-academic-node.two {
+
+      top: 97px;
+
+      right: 2px;
+
+      animation-delay:
+        .2s;
+
+    }
+
+
+    .np-academic-node.three {
+
+      bottom: 8px;
+
+      left: 92px;
+
+      color:
+        #e3d08d;
+
+      border-color:
+        rgba(215, 182, 93, .32);
+
+      animation-delay:
+        .4s;
+
+    }
+
+
+    .np-academic-node.four {
+
+      top: 100px;
+
+      left: 0;
+
+      animation-delay:
+        .6s;
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       DEVELOPER ANIMATION
+       CODE CORE
+       =====================================================
+       ===================================================== */
+
+    .np-developer-scene {
+
+      background:
+
+        radial-gradient(
+          circle,
+          rgba(25, 122, 255, .20),
+          transparent 45%
+        ),
+
+        #01050c;
+
+    }
+
+
+    .np-code-window {
+
+      position: relative;
+
+      width:
+        min(
+          430px,
+          82vw
+        );
+
+      padding:
+        18px;
+
+      overflow: hidden;
+
+      border:
+        1px solid
+        rgba(70, 160, 255, .34);
+
+      border-radius:
+        15px;
+
+      background:
+        rgba(3, 13, 29, .94);
+
+      box-shadow:
+        0 30px 80px
+        rgba(0, 0, 0, .4),
+        0 0 40px
+        rgba(65, 105, 225, .12);
+
+    }
+
+
+    .np-code-header {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      padding-bottom:
+        12px;
+
+      border-bottom:
+        1px solid
+        rgba(96, 139, 224, .12);
+
+    }
+
+
+    .np-code-dot {
+
+      width: 7px;
+
+      height: 7px;
+
+      border-radius: 50%;
+
+      background:
+        #6688ff;
+
+    }
+
+
+    .np-code-dot:nth-child(2) {
+
+      background:
+        var(--np-gold);
+
+    }
+
+
+    .np-code-dot:nth-child(3) {
+
+      background:
+        var(--np-green);
+
+    }
+
+
+    .np-code-lines {
+
+      margin-top:
+        14px;
+
+      text-align: left;
+
+      color:
+        #718dca;
+
+      font-family:
+        Consolas,
+        monospace;
+
+      font-size:
+        9px;
+
+      line-height:
+        1.9;
+
+    }
+
+
+    .np-code-line {
+
+      opacity: 0;
+
+      animation:
+        npCodeReveal
+        .3s forwards;
+
+    }
+
+
+    .np-code-line:nth-child(2) {
+      animation-delay: .18s;
+    }
+
+    .np-code-line:nth-child(3) {
+      animation-delay: .36s;
+    }
+
+    .np-code-line:nth-child(4) {
+      animation-delay: .54s;
+    }
+
+
+    .np-code-blue {
+      color: #7da0ff;
+    }
+
+
+    .np-code-gold {
+      color: #d7b65d;
+    }
+
+
+    .np-code-green {
+      color: #55e6a5;
+    }
+
+
+    .np-code-scan {
+
+      position: absolute;
+
+      left: 0;
+
+      right: 0;
+
+      height: 2px;
+
+      top: -5px;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          #47b1ff,
+          transparent
+        );
+
+      box-shadow:
+        0 0 15px
+        #47b1ff;
+
+      animation:
+        npCodeScan
+        1.2s linear infinite;
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       RESEARCHER ANIMATION
+       RESEARCH ORBIT
+       =====================================================
+       ===================================================== */
+
+    .np-researcher-scene {
+
+      background:
+
+        radial-gradient(
+          circle,
+          rgba(91, 85, 255, .18),
+          transparent 45%
+        ),
+
+        #030511;
+
+    }
+
+
+    .np-research-system {
+
+      position: relative;
+
+      width: 275px;
+
+      height: 275px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+
+    .np-research-core {
+
+      position: relative;
+
+      z-index: 8;
+
+      width: 80px;
+
+      height: 80px;
+
+      display: grid;
+
+      place-items: center;
+
+      border:
+        1px solid
+        rgba(215, 182, 93, .42);
+
+      border-radius: 50%;
+
+      color:
+        white;
+
+      background:
+        radial-gradient(
+          circle at 35% 25%,
+          #9eafff,
+          #5d70e5,
+          #253583
+        );
+
+      box-shadow:
+        0 0 55px
+        rgba(91, 111, 255, .55);
+
+      animation:
+        npResearchPulse
+        .9s ease-in-out infinite;
+
+    }
+
+
+    .np-research-core strong {
+
+      font-size:
+        20px;
+
+    }
+
+
+    .np-atom-ring {
+
+      position: absolute;
+
+      width: 215px;
+
+      height: 85px;
+
+      border:
+        1px solid
+        rgba(120, 145, 255, .45);
+
+      border-radius: 50%;
+
+    }
+
+
+    .np-atom-ring.one {
+
+      animation:
+        npAtomOne
+        3s linear infinite;
+
+    }
+
+
+    .np-atom-ring.two {
+
+      animation:
+        npAtomTwo
+        3.5s linear infinite;
+
+    }
+
+
+    .np-atom-ring.three {
+
+      animation:
+        npAtomThree
+        4s linear infinite;
+
+    }
+
+
+    .np-research-scan {
+
+      position: absolute;
+
+      width: 235px;
+
+      height: 235px;
+
+      border-radius: 50%;
+
+      border-top:
+        2px solid
+        var(--np-gold);
+
+      border-left:
+        2px solid transparent;
+
+      border-right:
+        2px solid transparent;
+
+      animation:
+        npRotate
+        2s linear infinite;
+
+    }
+
+
+    .np-research-label {
+
+      position: absolute;
+
+      padding:
+        5px 8px;
+
+      border:
+        1px solid
+        rgba(116, 145, 255, .23);
+
+      border-radius:
+        999px;
+
+      color:
+        #9eb3e8;
+
+      background:
+        #070d20;
+
+      font-size:
+        6px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        1px;
+
+    }
+
+
+    .np-research-label.data {
+
+      left: 8px;
+
+      top: 65px;
+
+    }
+
+
+    .np-research-label.paper {
+
+      right: 0;
+
+      top: 95px;
+
+    }
+
+
+    .np-research-label.evidence {
+
+      bottom: 17px;
+
+      left: 103px;
+
+      color:
+        #dec77d;
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       BUSINESS ANIMATION
+       STRATEGY COMMAND CENTER
+       =====================================================
+       ===================================================== */
+
+    .np-business-scene {
+
+      background:
+
+        radial-gradient(
+          circle,
+          rgba(38, 93, 194, .18),
+          transparent 48%
+        ),
+
+        #020611;
+
+    }
+
+
+    .np-business-panel {
+
+      position: relative;
+
+      width:
+        min(
+          440px,
+          84vw
+        );
+
+      height: 220px;
+
+      overflow: hidden;
+
+      border:
+        1px solid
+        rgba(215, 182, 93, .28);
+
+      border-radius:
+        16px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(13, 27, 54, .95),
+          rgba(3, 11, 25, .98)
+        );
+
+      box-shadow:
+        0 28px 80px
+        rgba(0, 0, 0, .35);
+
+    }
+
+
+    .np-market-grid {
+
+      position: absolute;
+
+      inset: 0;
+
+      opacity: .22;
+
+      background-image:
+
+        linear-gradient(
+          rgba(93, 128, 211, .08) 1px,
+          transparent 1px
+        ),
+
+        linear-gradient(
+          90deg,
+          rgba(93, 128, 211, .08) 1px,
+          transparent 1px
+        );
+
+      background-size:
+        35px 35px;
+
+    }
+
+
+    .np-business-bars {
+
+      position: absolute;
+
+      left: 35px;
+
+      right: 35px;
+
+      bottom: 35px;
+
+      height: 125px;
+
+      display: flex;
+
+      align-items: flex-end;
+
+      justify-content:
+        space-between;
+
+      gap: 10px;
+
+    }
+
+
+    .np-business-bar {
+
+      flex: 1;
+
+      max-width: 32px;
+
+      border-radius:
+        5px 5px 0 0;
+
+      background:
+        linear-gradient(
+          to top,
+          #2445aa,
+          #6c8cff
+        );
+
+      box-shadow:
+        0 0 15px
+        rgba(65, 105, 225, .2);
+
+      transform-origin:
+        bottom;
+
+      animation:
+        npMarketGrow
+        .85s ease both;
+
+    }
+
+
+    .np-business-bar:nth-child(1) {
+      height: 42%;
+    }
+
+    .np-business-bar:nth-child(2) {
+      height: 60%;
+      animation-delay: .1s;
+    }
+
+    .np-business-bar:nth-child(3) {
+      height: 48%;
+      animation-delay: .2s;
+    }
+
+    .np-business-bar:nth-child(4) {
+
+      height: 78%;
+
+      background:
+        linear-gradient(
+          to top,
+          #9c8142,
+          #d7b65d
+        );
+
+      animation-delay: .3s;
+
+    }
+
+    .np-business-bar:nth-child(5) {
+      height: 66%;
+      animation-delay: .4s;
+    }
+
+    .np-business-bar:nth-child(6) {
+      height: 92%;
+      animation-delay: .5s;
+    }
+
+
+    .np-market-line {
+
+      position: absolute;
+
+      left: 28px;
+
+      right: 28px;
+
+      top: 66px;
+
+      height: 2px;
+
+      transform:
+        rotate(-9deg);
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          var(--np-gold),
+          var(--np-green)
+        );
+
+      box-shadow:
+        0 0 12px
+        rgba(215, 182, 93, .3);
+
+      animation:
+        npMarketLine
+        1s ease both;
+
+    }
+
+
+    .np-business-chip {
+
+      position: absolute;
+
+      top: 17px;
+
+      padding:
+        5px 8px;
+
+      border-radius:
+        999px;
+
+      font-size:
+        6px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        1px;
+
+    }
+
+
+    .np-business-chip.growth {
+
+      left: 18px;
+
+      color:
+        var(--np-green);
+
+      border:
+        1px solid
+        rgba(85, 230, 165, .22);
+
+    }
+
+
+    .np-business-chip.risk {
+
+      left: 92px;
+
+      color:
+        #e5cc7c;
+
+      border:
+        1px solid
+        rgba(215, 182, 93, .22);
+
+    }
+
+
+    .np-business-chip.market {
+
+      right: 18px;
+
+      color:
+        #9db4ff;
+
+      border:
+        1px solid
+        rgba(102, 136, 255, .25);
+
+    }
+
+
+
+    /* =====================================================
+       =====================================================
+       GENERAL READER
+       GLOBAL NEWS INTELLIGENCE
+       =====================================================
+       ===================================================== */
+
+    .np-general-scene {
+
+      background:
+
+        radial-gradient(
+          circle,
+          rgba(40, 113, 255, .20),
+          transparent 45%
+        ),
+
+        #01050e;
+
+    }
+
+
+    .np-global-system {
+
+      position: relative;
+
+      width: 285px;
+
+      height: 270px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+
+    .np-globe {
+
+      position: relative;
+
+      z-index: 8;
+
+      width: 125px;
+
+      height: 125px;
+
+      overflow: hidden;
+
+      border:
+        1px solid
+        rgba(107, 148, 255, .5);
+
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle at 35% 30%,
+          #315dcc,
+          #122c6a 70%,
+          #07142f
+        );
+
+      box-shadow:
+        0 0 55px
+        rgba(65, 105, 225, .48);
+
+      animation:
+        npGlobePulse
+        1.1s ease-in-out infinite;
+
+    }
+
+
+    .np-globe::before {
+
+      content: "";
+
+      position: absolute;
+
+      width: 38px;
+
+      height: 100%;
+
+      left: 42px;
+
+      border:
+        1px solid
+        rgba(140, 170, 255, .38);
+
+      border-radius: 50%;
+
+    }
+
+
+    .np-globe::after {
+
+      content: "";
+
+      position: absolute;
+
+      width: 100%;
+
+      height: 40px;
+
+      top: 40px;
+
+      border:
+        1px solid
+        rgba(140, 170, 255, .38);
+
+      border-radius: 50%;
+
+    }
+
+
+    .np-global-orbit {
+
+      position: absolute;
+
+      width: 215px;
+
+      height: 215px;
+
+      border:
+        1px dashed
+        rgba(112, 147, 255, .3);
+
+      border-radius: 50%;
+
+      animation:
+        npRotate
+        5s linear infinite;
+
+    }
+
+
+    .np-news-satellite {
+
+      position: absolute;
+
+      padding:
+        5px 8px;
+
+      border:
+        1px solid
+        rgba(111, 145, 255, .26);
+
+      border-radius:
+        999px;
+
+      color:
+        #aec0ee;
+
+      background:
+        #06132b;
+
+      font-size:
+        6px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        1px;
+
+      animation:
+        npSatellitePulse
+        1s ease-in-out infinite;
+
+    }
+
+
+    .np-news-satellite.one {
+
+      top: 22px;
+
+      left: 112px;
+
+    }
+
+
+    .np-news-satellite.two {
+
+      right: 2px;
+
+      top: 106px;
+
+      animation-delay:
+        .2s;
+
+    }
+
+
+    .np-news-satellite.three {
+
+      bottom: 12px;
+
+      left: 117px;
+
+      color:
+        #dac377;
+
+      animation-delay:
+        .4s;
+
+    }
+
+
+    .np-news-satellite.four {
+
+      left: 0;
+
+      top: 105px;
+
+      animation-delay:
+        .6s;
+
+    }
+
+
+
+    /* =====================================================
+       KEYFRAMES
+       ===================================================== */
+
+    @keyframes npGridTravel {
+
+      from {
+        background-position:
+          0 0;
+      }
+
+      to {
+        background-position:
+          0 48px;
+      }
+
+    }
+
+
+    @keyframes npParticleFloat {
+
+      0% {
+
+        opacity: 0;
+
+        transform:
+          translateY(15px)
+          scale(.5);
+
+      }
+
+      50% {
+
+        opacity: 1;
+
+      }
+
+      100% {
+
+        opacity: 0;
+
+        transform:
+          translateY(-25px)
+          scale(1.5);
+
+      }
+
+    }
+
+
+    @keyframes npPortalArrival {
+
+      from {
+
+        opacity: 0;
+
+        transform:
+          scale(.35)
+          rotate(-12deg);
+
+      }
+
+      to {
+
+        opacity: 1;
+
+        transform:
+          scale(1)
+          rotate(0);
+
+      }
+
+    }
+
+
+    @keyframes npRotate {
+
+      to {
+        transform:
+          rotate(360deg);
+      }
+
+    }
+
+
+    @keyframes npRotateReverse {
+
+      to {
+        transform:
+          rotate(-360deg);
+      }
+
+    }
+
+
+    @keyframes npRingBreath {
+
+      0%,
+      100% {
+        transform: scale(.9);
+        opacity: .45;
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+      }
+
+    }
+
+
+    @keyframes npGlowPulse {
+
+      0%,
+      100% {
+        transform: scale(.9);
+      }
+
+      50% {
+        transform: scale(1.12);
+      }
+
+    }
+
+
+    @keyframes npCoreBreath {
+
+      0%,
+      100% {
+
+        transform:
+          rotate(45deg)
+          scale(.97);
+
+      }
+
+      50% {
+
+        transform:
+          rotate(45deg)
+          scale(1.04);
+
+      }
+
+    }
+
+
+    @keyframes npProgressTravel {
+
+      from {
+        left: -50%;
+      }
+
+      to {
+        left: 110%;
+      }
+
+    }
+
+
+    @keyframes npPortalLaunch {
+
+      0% {
+        transform: scale(1);
+      }
+
+      35% {
+        transform: scale(.86);
+      }
+
+      100% {
+
+        transform:
+          scale(5.5);
+
+        opacity: 0;
+
+        filter:
+          blur(10px);
+
+      }
+
+    }
+
+
+    @keyframes npFlash {
+
+      0% {
+        opacity: 0;
+      }
+
+      40% {
+        opacity: .8;
+      }
+
+      100% {
+        opacity: 0;
+      }
+
+    }
+
+
+    @keyframes npRoleEntrance {
+
+      from {
+
+        opacity: 0;
+
+        transform:
+          translateY(10px)
+          scale(.9);
+
+      }
+
+      to {
+
+        opacity: 1;
+
+        transform:
+          translateY(0)
+          scale(1);
+
+      }
+
+    }
+
+
+
+    /* STUDENT */
+
+    @keyframes npAcademicPulse {
+
+      0%,
+      100% {
+        transform: scale(.96);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+    }
+
+
+    @keyframes npAcademicNode {
+
+      0%,
+      100% {
+
+        transform:
+          translateY(0);
+
+        opacity:
+          .65;
+
+      }
+
+      50% {
+
+        transform:
+          translateY(-5px);
+
+        opacity: 1;
+
+      }
+
+    }
+
+
+
+    /* DEVELOPER */
+
+    @keyframes npCodeReveal {
+
+      from {
+
+        opacity: 0;
+
+        transform:
+          translateX(-8px);
+
+      }
+
+      to {
+
+        opacity: 1;
+
+        transform:
+          translateX(0);
+
+      }
+
+    }
+
+
+    @keyframes npCodeScan {
+
+      from {
+        top: -4px;
+      }
+
+      to {
+        top: 100%;
+      }
+
+    }
+
+
+
+    /* RESEARCH */
+
+    @keyframes npResearchPulse {
+
+      0%,
+      100% {
+
+        transform:
+          scale(.94);
+
+      }
+
+      50% {
+
+        transform:
+          scale(1.07);
+
+      }
+
+    }
+
+
+    @keyframes npAtomOne {
+
+      from {
+        transform:
+          rotate(0deg);
+      }
+
+      to {
+        transform:
+          rotate(360deg);
+      }
+
+    }
+
+
+    @keyframes npAtomTwo {
+
+      from {
+        transform:
+          rotate(60deg);
+      }
+
+      to {
+        transform:
+          rotate(420deg);
+      }
+
+    }
+
+
+    @keyframes npAtomThree {
+
+      from {
+        transform:
+          rotate(120deg);
+      }
+
+      to {
+        transform:
+          rotate(480deg);
+      }
+
+    }
+
+
+
+    /* BUSINESS */
+
+    @keyframes npMarketGrow {
+
+      from {
+
+        transform:
+          scaleY(0);
+
+      }
+
+      to {
+
+        transform:
+          scaleY(1);
+
+      }
+
+    }
+
+
+    @keyframes npMarketLine {
+
+      from {
+
+        transform:
+          scaleX(0)
+          rotate(-9deg);
+
+        transform-origin:
+          left;
+
+      }
+
+      to {
+
+        transform:
+          scaleX(1)
+          rotate(-9deg);
+
+        transform-origin:
+          left;
+
+      }
+
+    }
+
+
+
+    /* GENERAL */
+
+    @keyframes npGlobePulse {
+
+      0%,
+      100% {
+
+        transform:
+          scale(.97);
+
+      }
+
+      50% {
+
+        transform:
+          scale(1.04);
+
+      }
+
+    }
+
+
+    @keyframes npSatellitePulse {
+
+      0%,
+      100% {
+
+        opacity: .55;
+
+        transform:
+          scale(.92);
+
+      }
+
+      50% {
+
+        opacity: 1;
+
+        transform:
+          scale(1.05);
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       MOBILE
+       ===================================================== */
+
+    @media (
+      max-width: 600px
+    ) {
+
+      .np-refresh-portal {
+
+        transform:
+          scale(.84);
+
+      }
+
+
+      .np-refresh-brand {
+
+        font-size:
+          32px;
+
+      }
+
+
+      .np-academic-system,
+      .np-research-system,
+      .np-global-system {
+
+        transform:
+          scale(.88);
+
+      }
+
+
+      .np-business-panel {
+
+        height:
+          190px;
+
+      }
+
+
+      .np-code-lines {
+
+        font-size:
+          8px;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       REDUCED MOTION
+       ===================================================== */
+
+    @media (
+      prefers-reduced-motion:
+      reduce
+    ) {
+
+      .np-fullscreen *,
+      .np-fullscreen *::before,
+      .np-fullscreen *::after {
+
+        animation-duration:
+          .01ms !important;
+
+        animation-iteration-count:
+          1 !important;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- =====================================================
+       PAGE REFRESH PORTAL
+       ===================================================== -->
+
+  <div
+    id="np-refresh-loader"
+    class="np-fullscreen"
+  >
+
+
+    <div
+      class="np-refresh-grid"
+    ></div>
+
+
+    <div
+      class="np-refresh-particles"
+    >
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+      <span class="np-refresh-particle"></span>
+
+    </div>
+
+
+    <div class="np-refresh-content">
+
+
+      <div class="np-refresh-portal">
+
+
+        <div
+          class="np-refresh-glow"
+        ></div>
+
+
+        <div
+          class="
+            np-refresh-ring
+            one
+          "
+        ></div>
+
+
+        <div
+          class="
+            np-refresh-ring
+            two
+          "
+        ></div>
+
+
+        <div
+          class="
+            np-refresh-ring
+            three
+          "
+        ></div>
+
+
+        <div class="np-refresh-core">
+
+          <span>
+            NP
+          </span>
+
+        </div>
+
+
+      </div>
+
+
+      <div class="np-refresh-live">
+
+        LIVE INTELLIGENCE
+
+      </div>
+
+
+      <div class="np-refresh-brand">
+
+        NewsPulse
+        <span>
+          AI
+        </span>
+
+      </div>
+
+
+      <div class="np-refresh-subtitle">
+
+        ROYAL INTELLIGENCE NETWORK
+
+      </div>
+
+
+      <div
+        class="np-refresh-progress"
+      ></div>
+
+
+      <div class="np-refresh-status">
+
+        SYNCHRONIZING LIVE NEWS INTELLIGENCE
+
+      </div>
+
+
+    </div>
+
+
+    <div
+      class="np-refresh-flash"
+    ></div>
+
+
+  </div>
+
+
+
+  <!-- =====================================================
+       ROLE BASED GENERATE BRIEFING ANIMATION
+       ===================================================== -->
+
+  <div
+    id="np-role-loader"
+    class="np-fullscreen"
+    data-role="general"
+  >
+
+
+    <!-- ===================================================
+         STUDENT
+         =================================================== -->
+
+    <div
+      class="
+        np-role-scene
+        np-student-scene
+      "
+    >
+
+
+      <div class="np-role-content">
+
+
+        <div class="np-academic-system">
+
+
+          <div
+            class="np-academic-orbit"
+          ></div>
+
+
+          <div
+            class="
+              np-academic-node
+              one
+            "
+          >
+            EXAMS
+          </div>
+
+
+          <div
+            class="
+              np-academic-node
+              two
+            "
+          >
+            CAREERS
+          </div>
+
+
+          <div
+            class="
+              np-academic-node
+              three
+            "
+          >
+            SCHOLARSHIPS
+          </div>
+
+
+          <div
+            class="
+              np-academic-node
+              four
+            "
+          >
+            CAMPUS
+          </div>
+
+
+          <div class="np-academic-core">
+
+            <strong>
+              EDU
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="np-role-mini">
+
+          STUDENT INTELLIGENCE MODE
+
+        </div>
+
+
+        <div class="np-role-title">
+
+          Academic Intelligence
+          Activated
+
+        </div>
+
+
+        <div class="np-role-status">
+
+          STUDENT BRIEFING STARTED
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <!-- ===================================================
+         DEVELOPER
+         =================================================== -->
+
+    <div
+      class="
+        np-role-scene
+        np-developer-scene
+      "
+    >
+
+
+      <div class="np-role-content">
+
+
+        <div class="np-code-window">
+
+
+          <div class="np-code-scan"></div>
+
+
+          <div class="np-code-header">
+
+            <span class="np-code-dot"></span>
+
+            <span class="np-code-dot"></span>
+
+            <span class="np-code-dot"></span>
+
+          </div>
+
+
+          <div class="np-code-lines">
+
+
+            <div class="np-code-line">
+
+              <span class="np-code-blue">
+                const
+              </span>
+
+              intelligence =
+
+              <span class="np-code-gold">
+                "NewsPulse"
+              </span>;
+
+            </div>
+
+
+            <div class="np-code-line">
+
+              scan(
+              <span class="np-code-green">
+                liveTechNews
+              </span>
+              );
+
+            </div>
+
+
+            <div class="np-code-line">
+
+              cluster(
+              AI,
+              APIs,
+              Cloud,
+              Security
+              );
+
+            </div>
+
+
+            <div class="np-code-line">
+
+              briefing.status =
+
+              <span class="np-code-green">
+                "STARTED"
+              </span>;
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+        <div class="np-role-mini">
+
+          DEVELOPER INTELLIGENCE MODE
+
+        </div>
+
+
+        <div class="np-role-title">
+
+          Code Intelligence
+          Activated
+
+        </div>
+
+
+        <div class="np-role-status">
+
+          DEVELOPER BRIEFING STARTED
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <!-- ===================================================
+         RESEARCHER
+         =================================================== -->
+
+    <div
+      class="
+        np-role-scene
+        np-researcher-scene
+      "
+    >
+
+
+      <div class="np-role-content">
+
+
+        <div class="np-research-system">
+
+
+          <div class="np-atom-ring one"></div>
+
+          <div class="np-atom-ring two"></div>
+
+          <div class="np-atom-ring three"></div>
+
+
+          <div
+            class="np-research-scan"
+          ></div>
+
+
+          <div
+            class="
+              np-research-label
+              data
+            "
+          >
+            DATA
+          </div>
+
+
+          <div
+            class="
+              np-research-label
+              paper
+            "
+          >
+            PAPERS
+          </div>
+
+
+          <div
+            class="
+              np-research-label
+              evidence
+            "
+          >
+            EVIDENCE
+          </div>
+
+
+          <div class="np-research-core">
+
+            <strong>
+              R&D
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="np-role-mini">
+
+          RESEARCH INTELLIGENCE MODE
+
+        </div>
+
+
+        <div class="np-role-title">
+
+          Research Network
+          Activated
+
+        </div>
+
+
+        <div class="np-role-status">
+
+          RESEARCH BRIEFING STARTED
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <!-- ===================================================
+         BUSINESS OWNER
+         =================================================== -->
+
+    <div
+      class="
+        np-role-scene
+        np-business-scene
+      "
+    >
+
+
+      <div class="np-role-content">
+
+
+        <div class="np-business-panel">
+
+
+          <div
+            class="np-market-grid"
+          ></div>
+
+
+          <div
+            class="
+              np-business-chip
+              growth
+            "
+          >
+            GROWTH
+          </div>
+
+
+          <div
+            class="
+              np-business-chip
+              risk
+            "
+          >
+            RISK
+          </div>
+
+
+          <div
+            class="
+              np-business-chip
+              market
+            "
+          >
+            MARKET LIVE
+          </div>
+
+
+          <div
+            class="np-market-line"
+          ></div>
+
+
+          <div class="np-business-bars">
+
+            <div class="np-business-bar"></div>
+
+            <div class="np-business-bar"></div>
+
+            <div class="np-business-bar"></div>
+
+            <div class="np-business-bar"></div>
+
+            <div class="np-business-bar"></div>
+
+            <div class="np-business-bar"></div>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="np-role-mini">
+
+          BUSINESS INTELLIGENCE MODE
+
+        </div>
+
+
+        <div class="np-role-title">
+
+          Strategy Engine
+          Activated
+
+        </div>
+
+
+        <div class="np-role-status">
+
+          BUSINESS BRIEFING STARTED
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <!-- ===================================================
+         GENERAL READER
+         =================================================== -->
+
+    <div
+      class="
+        np-role-scene
+        np-general-scene
+      "
+    >
+
+
+      <div class="np-role-content">
+
+
+        <div class="np-global-system">
+
+
+          <div
+            class="np-global-orbit"
+          ></div>
+
+
+          <div
+            class="
+              np-news-satellite
+              one
+            "
+          >
+            WORLD
+          </div>
+
+
+          <div
+            class="
+              np-news-satellite
+              two
+            "
+          >
+            TECH
+          </div>
+
+
+          <div
+            class="
+              np-news-satellite
+              three
+            "
+          >
+            TOP NEWS
+          </div>
+
+
+          <div
+            class="
+              np-news-satellite
+              four
+            "
+          >
+            INDIA
+          </div>
+
+
+          <div class="np-globe"></div>
+
+
+        </div>
+
+
+        <div class="np-role-mini">
+
+          GLOBAL INTELLIGENCE MODE
+
+        </div>
+
+
+        <div class="np-role-title">
+
+          World News Network
+          Activated
+
+        </div>
+
+
+        <div class="np-role-status">
+
+          GENERAL BRIEFING STARTED
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+  <!-- =====================================================
+       REACT APP
+       ===================================================== -->
+
+  <noscript>
+
+    You need JavaScript enabled
+    to run NewsPulse AI.
+
+  </noscript>
+
+
+  <div id="root"></div>
+
+
+
+  <!-- =====================================================
+       CONTROLLER
+       ===================================================== -->
+
+  <script>
+
+    (function () {
+
+
+      var refreshLoader =
+        document.getElementById(
+          "np-refresh-loader"
+        );
+
+
+      var roleLoader =
+        document.getElementById(
+          "np-role-loader"
+        );
+
+
+      var roleTimer =
+        null;
+
+
+
+      /* ===================================================
+         REFRESH PORTAL
+         =================================================== */
+
+      function finishRefreshAnimation() {
+
+
+        if (!refreshLoader) {
+
+          return;
+
+        }
+
+
+        refreshLoader.classList.add(
+          "np-charge"
+        );
+
+
+        setTimeout(
+          function () {
+
+            refreshLoader.classList.add(
+              "np-exit"
+            );
+
+          },
+          520
+        );
+
+      }
+
+
+      window.addEventListener(
+        "load",
+        function () {
+
+          setTimeout(
+            finishRefreshAnimation,
+            1850
+          );
+
+        }
+      );
+
+
+      setTimeout(
+        finishRefreshAnimation,
+        4200
+      );
+
+
+
+      /* ===================================================
+         ROLE NORMALIZER
+         =================================================== */
+
+      function normalizeRole(
+        value
+      ) {
+
+
+        var role =
+          String(
+            value || ""
+          )
+          .toLowerCase()
+          .trim();
+
+
+        if (
+          role.includes(
+            "student"
+          )
+        ) {
+
+          return "student";
+
+        }
+
+
+        if (
+          role.includes(
+            "developer"
+          )
+          ||
+          role.includes(
+            "programmer"
+          )
+        ) {
+
+          return "developer";
+
+        }
+
+
+        if (
+          role.includes(
+            "research"
+          )
+        ) {
+
+          return "researcher";
+
+        }
+
+
+        if (
+          role.includes(
+            "business"
+          )
+          ||
+          role.includes(
+            "owner"
+          )
+        ) {
+
+          return "business";
+
+        }
+
+
+        return "general";
+
+      }
+
+
+
+      /* ===================================================
+         READ ROLE FROM CURRENT SELECT
+         =================================================== */
+
+      function getRoleFromUI() {
+
+
+        try {
+
+
+          var selects =
+            document.querySelectorAll(
+              ".dock-control select"
+            );
+
+
+          if (
+            selects
+            &&
+            selects.length > 0
+          ) {
+
+            return normalizeRole(
+              selects[0].value
+            );
+
+          }
+
+
+        }
+
+        catch (error) {
+
+          console.log(
+            "NewsPulse role read error",
+            error
+          );
+
+        }
+
+
+        return "general";
+
+      }
+
+
+
+      /* ===================================================
+         READ ROLE FROM API BODY
+         =================================================== */
+
+      function getRoleFromBody(
+        body
+      ) {
+
+
+        try {
+
+
+          if (
+            typeof body ===
+            "string"
+          ) {
+
+
+            var parsed =
+              JSON.parse(
+                body
+              );
+
+
+            if (
+              parsed
+              &&
+              parsed.user_role
+            ) {
+
+              return normalizeRole(
+                parsed.user_role
+              );
+
+            }
+
+
+          }
+
+
+        }
+
+        catch (error) {
+
+          /*
+            Ignore invalid JSON.
+            UI role will be used instead.
+          */
+
+        }
+
+
+        return null;
+
+      }
+
+
+
+      /* ===================================================
+         SHOW ROLE ANIMATION
+         =================================================== */
+
+      function showRoleAnimation(
+        role
+      ) {
+
+
+        if (!roleLoader) {
+
+          return;
+
+        }
+
+
+        if (roleTimer) {
+
+          clearTimeout(
+            roleTimer
+          );
+
+        }
+
+
+        role =
+          normalizeRole(
+            role
+          );
+
+
+        roleLoader.setAttribute(
+          "data-role",
+          role
+        );
+
+
+        /*
+          Restart every animation cleanly.
+        */
+
+        roleLoader.classList.remove(
+          "np-show"
+        );
+
+
+        void roleLoader.offsetWidth;
+
+
+        roleLoader.classList.add(
+          "np-show"
+        );
+
+
+        /*
+          This only indicates that processing
+          has STARTED.
+
+          It does not wait for Claude.
+        */
+
+        roleTimer =
+          setTimeout(
+            function () {
+
+
+              roleLoader.classList.remove(
+                "np-show"
+              );
+
+
+            },
+            1550
+          );
+
+      }
+
+
+
+      /* ===================================================
+         AXIOS / XMLHttpRequest
+         =================================================== */
+
+      var originalOpen =
+        XMLHttpRequest
+          .prototype
+          .open;
+
+
+      var originalSend =
+        XMLHttpRequest
+          .prototype
+          .send;
+
+
+      XMLHttpRequest
+        .prototype
+        .open =
+        function (
+          method,
+          url
+        ) {
+
+
+          this.__npBriefing =
+            (
+              typeof url ===
+                "string"
+              &&
+              url.includes(
+                "/api/orchestrate"
+              )
+            );
+
+
+          return originalOpen.apply(
+            this,
+            arguments
+          );
+
+        };
+
+
+      XMLHttpRequest
+        .prototype
+        .send =
+        function (
+          body
+        ) {
+
+
+          if (
+            this.__npBriefing
+          ) {
+
+
+            var role =
+              getRoleFromBody(
+                body
+              )
+              ||
+              getRoleFromUI();
+
+
+            showRoleAnimation(
+              role
+            );
+
+          }
+
+
+          return originalSend.apply(
+            this,
+            arguments
+          );
+
+        };
+
+
+
+      /* ===================================================
+         FETCH SUPPORT
+         =================================================== */
+
+      if (
+        window.fetch
+      ) {
+
+
+        var originalFetch =
+          window.fetch;
+
+
+        window.fetch =
+          function (
+            input,
+            options
+          ) {
+
+
+            var url = "";
+
+
+            if (
+              typeof input ===
+              "string"
+            ) {
+
+              url = input;
+
+            }
+
+
+            else if (
+              input
+              &&
+              input.url
+            ) {
+
+              url =
+                input.url;
+
+            }
+
+
+            if (
+              url.includes(
+                "/api/orchestrate"
+              )
+            ) {
+
+
+              var role =
+                null;
+
+
+              if (
+                options
+                &&
+                options.body
+              ) {
+
+                role =
+                  getRoleFromBody(
+                    options.body
+                  );
+
+              }
+
+
+              showRoleAnimation(
+                role
+                ||
+                getRoleFromUI()
+              );
+
+            }
+
+
+            return originalFetch.apply(
+              this,
+              arguments
+            );
+
+          };
+
+      }
+
+
+    })();
+
+  </script>
+
+
+</body>
+
 </html>

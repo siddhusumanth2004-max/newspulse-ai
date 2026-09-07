@@ -1,12 +1,25 @@
+import copy
+import hashlib
+import threading
 import time
 
-from typing import List
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed,
+)
+
+from typing import (
+    Dict,
+    List,
+    Tuple,
+)
 
 from models.schemas import (
     CollectedArticle,
     DeltaResponse,
     OrchestratedStory,
     OrchestratorResponse,
+    SingleAgentAnalysis,
 )
 
 from services.news_collector import (
@@ -33,41 +46,89 @@ from agents.news_intelligence_agent import (
 
 
 # =========================================================
-# NEWSPULSE ROLE-BASED FAST ORCHESTRATOR
+# NEWSPULSE FAST ORCHESTRATOR
 # =========================================================
+
+
+# =========================================================
+# PERFORMANCE SETTINGS
+#
+# Keep this at 2.
+#
+# Two Claude requests can run together.
+# Increasing it too much may cause rate limits.
+# =========================================================
+
+MAX_PARALLEL_AI_CALLS = 2
+
+
+# Number of articles from one cluster
+# that are sent to Claude.
+MAX_CONTEXT_SOURCES = 3
+
+
+# Maximum summary characters for each source.
+MAX_SUMMARY_CHARS = 650
+
+
+# AI analysis cache lifetime.
+AI_CACHE_TTL_SECONDS = 300
+
+
+# Maximum number of cached AI analyses.
+MAX_AI_CACHE_ITEMS = 100
+
+
+# =========================================================
+# AI CACHE
+#
+# key ->
+# (
+#     timestamp,
+#     SingleAgentAnalysis
+# )
+# =========================================================
+
+_ai_cache: Dict[
+    str,
+    Tuple[
+        float,
+        SingleAgentAnalysis,
+    ],
+] = {}
+
+
+_ai_cache_lock = threading.Lock()
 
 
 # =========================================================
 # BUILD STORY CONTEXT
 #
-# We intentionally send only the first 3 articles
-# and shorten very large RSS summaries.
-#
-# This reduces Claude input tokens and latency.
+# Smaller context = fewer Claude input tokens.
 # =========================================================
 
 def build_story_context(
-    articles: List[
-        CollectedArticle
-    ],
+    articles: List[CollectedArticle],
 ) -> str:
 
     sections = []
 
     for index, article in enumerate(
-        articles[:3],
+        articles[:MAX_CONTEXT_SOURCES],
         start=1,
     ):
 
         summary = (
             article.summary
             or ""
-        )
+        ).strip()
 
-        if len(summary) > 900:
+        if len(summary) > MAX_SUMMARY_CHARS:
 
             summary = (
-                summary[:900]
+                summary[
+                    :MAX_SUMMARY_CHARS
+                ]
                 + "..."
             )
 
@@ -89,10 +150,11 @@ Published:
 
 Original Link:
 {article.link}
-"""
+""".strip()
+
 
         sections.append(
-            section.strip()
+            section
         )
 
 
@@ -104,14 +166,12 @@ Original Link:
 # =========================================================
 # BUILD STORY MATCHING TEXT
 #
-# Keep memory matching compact as well.
+# Used only for SentenceTransformer memory matching.
 # =========================================================
 
 def build_matching_text(
     representative_title: str,
-    articles: List[
-        CollectedArticle
-    ],
+    articles: List[CollectedArticle],
 ) -> str:
 
     pieces = [
@@ -119,17 +179,19 @@ def build_matching_text(
     ]
 
 
-    for article in articles[:3]:
+    for article in articles[
+        :MAX_CONTEXT_SOURCES
+    ]:
 
         summary = (
             article.summary
             or ""
-        )
+        ).strip()
 
         pieces.append(
             (
                 f"{article.title}. "
-                f"{summary[:350]}"
+                f"{summary[:300]}"
             )
         )
 
@@ -137,6 +199,249 @@ def build_matching_text(
     return " ".join(
         pieces
     )
+
+
+# =========================================================
+# AI CACHE KEY
+#
+# previous_story is included because Delta / What Changed
+# depends on the previous Living Story.
+# =========================================================
+
+def build_ai_cache_key(
+    story_context: str,
+    user_role: str,
+    source_count: int,
+    previous_story: str | None,
+) -> str:
+
+    raw_key = (
+        f"ROLE={user_role}\n"
+        f"SOURCES={source_count}\n"
+        f"CURRENT={story_context}\n"
+        f"PREVIOUS={previous_story or ''}"
+    )
+
+
+    return hashlib.sha256(
+        raw_key.encode(
+            "utf-8"
+        )
+    ).hexdigest()
+
+
+# =========================================================
+# AI CACHE READ
+# =========================================================
+
+def get_cached_analysis(
+    cache_key: str,
+):
+
+    with _ai_cache_lock:
+
+        cached = _ai_cache.get(
+            cache_key
+        )
+
+        if cached is None:
+
+            return None
+
+
+        cached_time, analysis = cached
+
+
+        cache_age = (
+            time.time()
+            - cached_time
+        )
+
+
+        if cache_age > AI_CACHE_TTL_SECONDS:
+
+            _ai_cache.pop(
+                cache_key,
+                None,
+            )
+
+            return None
+
+
+        # Return a deep copy because later code may modify
+        # delta/evidence values.
+        return copy.deepcopy(
+            analysis
+        )
+
+
+# =========================================================
+# AI CACHE WRITE
+# =========================================================
+
+def save_cached_analysis(
+    cache_key: str,
+    analysis: SingleAgentAnalysis,
+):
+
+    with _ai_cache_lock:
+
+        # Keep cache small.
+        if (
+            len(_ai_cache)
+            >= MAX_AI_CACHE_ITEMS
+        ):
+
+            oldest_key = min(
+                _ai_cache,
+
+                key=lambda key:
+                    _ai_cache[
+                        key
+                    ][0],
+            )
+
+            _ai_cache.pop(
+                oldest_key,
+                None,
+            )
+
+
+        _ai_cache[
+            cache_key
+        ] = (
+            time.time(),
+            copy.deepcopy(
+                analysis
+            ),
+        )
+
+
+# =========================================================
+# ANALYZE ONE STORY
+#
+# This function runs inside ThreadPoolExecutor.
+# =========================================================
+
+def analyze_prepared_story(
+    prepared_item: dict,
+    user_role: str,
+) -> SingleAgentAnalysis:
+
+    story_number = (
+        prepared_item[
+            "story_number"
+        ]
+    )
+
+    story_context = (
+        prepared_item[
+            "story_context"
+        ]
+    )
+
+    previous_story = (
+        prepared_item[
+            "previous_story"
+        ]
+    )
+
+    source_count = (
+        prepared_item[
+            "cluster"
+        ].article_count
+    )
+
+
+    cache_key = build_ai_cache_key(
+        story_context=story_context,
+
+        user_role=user_role,
+
+        source_count=source_count,
+
+        previous_story=previous_story,
+    )
+
+
+    # =====================================================
+    # CACHE CHECK
+    # =====================================================
+
+    cached_analysis = (
+        get_cached_analysis(
+            cache_key
+        )
+    )
+
+
+    if cached_analysis is not None:
+
+        print(
+            f"[AI CACHE HIT] "
+            f"Story {story_number}"
+        )
+
+        return cached_analysis
+
+
+    # =====================================================
+    # CLAUDE CALL
+    # =====================================================
+
+    print(
+        f"[AI START] "
+        f"Story {story_number}"
+    )
+
+
+    ai_started = (
+        time.perf_counter()
+    )
+
+
+    analysis = (
+        analyze_news_story(
+
+            story_context=
+                story_context,
+
+            user_role=
+                user_role,
+
+            source_count=
+                source_count,
+
+            previous_story=
+                previous_story,
+        )
+    )
+
+
+    ai_time = (
+        time.perf_counter()
+        - ai_started
+    )
+
+
+    print(
+        f"[AI COMPLETE] "
+        f"Story {story_number}: "
+        f"{ai_time:.2f}s"
+    )
+
+
+    # =====================================================
+    # CACHE SUCCESSFUL RESULT
+    # =====================================================
+
+    save_cached_analysis(
+        cache_key,
+        analysis,
+    )
+
+
+    return analysis
 
 
 # =========================================================
@@ -161,17 +466,31 @@ def run_orchestrator(
     ).strip()
 
 
+    max_stories = max(
+        1,
+        int(max_stories),
+    )
+
+
     print()
     print(
         "========================================"
     )
+
     print(
-        "NEWSPULSE ROLE-BASED FAST LANGCHAIN"
+        "NEWSPULSE HIGH-SPEED LANGCHAIN AGENT"
     )
+
     print(
         "ROLE:",
         selected_role
     )
+
+    print(
+        "PARALLEL AI CALLS:",
+        MAX_PARALLEL_AI_CALLS
+    )
+
     print(
         "========================================"
     )
@@ -179,7 +498,7 @@ def run_orchestrator(
 
     # =====================================================
     # STEP 1
-    # COLLECT ONLY ROLE-RELEVANT NEWS
+    # ROLE-BASED NEWS COLLECTION
     # =====================================================
 
     collection_started = (
@@ -189,17 +508,19 @@ def run_orchestrator(
 
     print()
     print(
-        "[1] COLLECTING ROLE-BASED LIVE NEWS"
+        "[1] COLLECTING ROLE-BASED NEWS"
     )
 
 
-    articles = collect_latest_news(
+    articles = (
+        collect_latest_news(
 
-        limit_per_source=
-            limit_per_source,
+            limit_per_source=
+                limit_per_source,
 
-        user_role=
-            selected_role,
+            user_role=
+                selected_role,
+        )
     )
 
 
@@ -210,13 +531,13 @@ def run_orchestrator(
 
 
     print(
-        "[TIMING] News collection:",
+        "[TIMING] Collection:",
         f"{collection_time:.2f}s"
     )
 
 
     # =====================================================
-    # NO ARTICLES
+    # NO NEWS
     # =====================================================
 
     if not articles:
@@ -224,7 +545,7 @@ def run_orchestrator(
         return OrchestratorResponse(
 
             agent_name=(
-                "NewsPulse Role-Based Fast "
+                "NewsPulse High-Speed "
                 "LangChain Intelligence Agent"
             ),
 
@@ -238,21 +559,16 @@ def run_orchestrator(
 
             existing_stories_updated=0,
 
-            user_role=selected_role,
+            user_role=
+                selected_role,
 
             stories=[],
         )
 
 
-    print(
-        "Articles collected:",
-        len(articles)
-    )
-
-
     # =====================================================
     # STEP 2
-    # CLUSTER SIMILAR NEWS
+    # STORY CLUSTERING
     # =====================================================
 
     clustering_started = (
@@ -289,7 +605,11 @@ def run_orchestrator(
     )
 
 
-    sorted_clusters = sorted(
+    # =====================================================
+    # PICK MOST IMPORTANT CLUSTERS
+    # =====================================================
+
+    selected_clusters = sorted(
 
         clustering_result.clusters,
 
@@ -297,18 +617,17 @@ def run_orchestrator(
             cluster.article_count,
 
         reverse=True,
-    )
 
-
-    selected_clusters = (
-        sorted_clusters[
-            :max_stories
-        ]
-    )
+    )[:max_stories]
 
 
     print(
-        "Total clusters:",
+        "Articles:",
+        len(articles)
+    )
+
+    print(
+        "Clusters:",
         clustering_result.total_clusters
     )
 
@@ -319,80 +638,45 @@ def run_orchestrator(
 
 
     # =====================================================
-    # COUNTERS
+    # STEP 3
+    # LIVING STORY MATCHING
+    #
+    # Do this sequentially.
+    #
+    # This prevents the same saved story from
+    # matching multiple new clusters.
     # =====================================================
 
-    analyzed_results = []
+    matching_started = (
+        time.perf_counter()
+    )
 
-    new_story_count = 0
 
-    updated_story_count = 0
+    print()
+    print(
+        "[3] MATCHING LIVING STORIES"
+    )
+
+
+    prepared_stories = []
 
     used_story_ids = set()
 
 
-    # =====================================================
-    # STEP 3+
-    # PROCESS SELECTED STORIES
-    #
-    # Claude remains sequential in this version.
-    #
-    # We keep it this way for stability.
-    # Collection speed + smaller Claude context
-    # already reduce response time.
-    # =====================================================
-
-    for index, cluster in enumerate(
+    for story_number, cluster in enumerate(
         selected_clusters,
         start=1,
     ):
-
-        story_started = (
-            time.perf_counter()
-        )
-
-
-        print()
-        print(
-            "========================================"
-        )
-
-        print(
-            f"PROCESSING STORY {index}"
-        )
-
-        print(
-            cluster.representative_title
-        )
-
-        print(
-            "========================================"
-        )
-
 
         story_articles = (
             cluster.articles
         )
 
 
-        # =================================================
-        # BUILD COMPACT LLM CONTEXT
-        # =================================================
-
         story_context = (
             build_story_context(
                 story_articles
             )
-        )
-
-
-        # =================================================
-        # CHECK LIVING STORY MEMORY
-        # =================================================
-
-        print()
-        print(
-            "[3] CHECKING LIVING STORY MEMORY"
         )
 
 
@@ -434,88 +718,305 @@ def run_orchestrator(
                 .latest_article
             )
 
-            print(
-                "Existing Living Story matched."
-            )
 
-            print(
-                "Story ID:",
+            used_story_ids.add(
                 matched_story.story_id
             )
 
+
             print(
-                "Similarity:",
-                round(
-                    float(
-                        similarity_score
-                    ),
-                    4,
-                )
+                f"Story {story_number}: "
+                f"MATCHED "
+                f"({similarity_score:.4f})"
             )
 
 
         else:
 
             print(
-                "No previous story matched."
-            )
-
-            print(
-                "Creating a new Living Story."
+                f"Story {story_number}: "
+                "NEW STORY"
             )
 
 
-        # =================================================
-        # RUN WORKING LANGCHAIN / CLAUDE AGENT
-        #
-        # IMPORTANT:
-        # We do NOT change news_intelligence_agent.py.
-        # =================================================
+        prepared_stories.append(
+            {
+                "story_number":
+                    story_number,
 
-        print()
-        print(
-            "[4] RUNNING LANGCHAIN AGENT"
+                "cluster":
+                    cluster,
+
+                "story_articles":
+                    story_articles,
+
+                "story_context":
+                    story_context,
+
+                "matched_story":
+                    matched_story,
+
+                "similarity_score":
+                    similarity_score,
+
+                "previous_story":
+                    previous_story,
+            }
         )
 
 
-        ai_started = (
-            time.perf_counter()
+    matching_time = (
+        time.perf_counter()
+        - matching_started
+    )
+
+
+    print(
+        "[TIMING] Memory matching:",
+        f"{matching_time:.2f}s"
+    )
+
+
+    # =====================================================
+    # STEP 4
+    # PARALLEL CLAUDE ANALYSIS
+    #
+    # Old:
+    #
+    # Story 1 -> wait
+    # Story 2 -> wait
+    # Story 3 -> wait
+    #
+    # New:
+    #
+    # Story 1 ─┐
+    #           ├── Claude together
+    # Story 2 ─┘
+    #
+    # Max 2 at once.
+    # =====================================================
+
+    ai_started = (
+        time.perf_counter()
+    )
+
+
+    print()
+    print(
+        "[4] RUNNING LANGCHAIN + CLAUDE"
+    )
+
+
+    analyses = {}
+
+
+    worker_count = min(
+        MAX_PARALLEL_AI_CALLS,
+        len(prepared_stories),
+    )
+
+
+    failed_items = []
+
+
+    if worker_count > 0:
+
+        with ThreadPoolExecutor(
+            max_workers=worker_count
+        ) as executor:
+
+            future_map = {}
+
+
+            for item in prepared_stories:
+
+                future = executor.submit(
+                    analyze_prepared_story,
+
+                    item,
+
+                    selected_role,
+                )
+
+
+                future_map[
+                    future
+                ] = item
+
+
+            for future in as_completed(
+                future_map
+            ):
+
+                item = (
+                    future_map[
+                        future
+                    ]
+                )
+
+
+                story_number = (
+                    item[
+                        "story_number"
+                    ]
+                )
+
+
+                try:
+
+                    analyses[
+                        story_number
+                    ] = (
+                        future.result()
+                    )
+
+
+                except Exception as error:
+
+                    print(
+                        f"[AI PARALLEL ERROR] "
+                        f"Story {story_number}: "
+                        f"{error}"
+                    )
+
+
+                    # Retry sequentially later.
+                    failed_items.append(
+                        item
+                    )
+
+
+    # =====================================================
+    # SAFETY RETRY
+    #
+    # If one parallel request fails due to a temporary
+    # API/network/rate-limit issue, retry only that story.
+    # =====================================================
+
+    for item in failed_items:
+
+        story_number = (
+            item[
+                "story_number"
+            ]
+        )
+
+
+        print(
+            f"[AI RETRY] "
+            f"Story {story_number} "
+            f"sequential retry..."
+        )
+
+
+        analyses[
+            story_number
+        ] = (
+            analyze_prepared_story(
+
+                item,
+
+                selected_role,
+            )
+        )
+
+
+    ai_time = (
+        time.perf_counter()
+        - ai_started
+    )
+
+
+    print(
+        "[TIMING] Total AI stage:",
+        f"{ai_time:.2f}s"
+    )
+
+
+    # =====================================================
+    # STEP 5
+    # SAVE LIVING STORIES
+    #
+    # IMPORTANT:
+    #
+    # AI generation is parallel.
+    #
+    # File/story-memory writing remains sequential
+    # to avoid corrupting the memory store.
+    # =====================================================
+
+    save_started = (
+        time.perf_counter()
+    )
+
+
+    print()
+    print(
+        "[5] SAVING LIVING STORY MEMORY"
+    )
+
+
+    orchestrated_results = []
+
+    new_story_count = 0
+
+    updated_story_count = 0
+
+
+    for item in prepared_stories:
+
+        story_number = (
+            item[
+                "story_number"
+            ]
+        )
+
+
+        cluster = (
+            item[
+                "cluster"
+            ]
+        )
+
+
+        story_articles = (
+            item[
+                "story_articles"
+            ]
+        )
+
+
+        story_context = (
+            item[
+                "story_context"
+            ]
+        )
+
+
+        matched_story = (
+            item[
+                "matched_story"
+            ]
+        )
+
+
+        similarity_score = (
+            item[
+                "similarity_score"
+            ]
         )
 
 
         analysis = (
-            analyze_news_story(
-
-                story_context=
-                    story_context,
-
-                user_role=
-                    selected_role,
-
-                source_count=
-                    cluster.article_count,
-
-                previous_story=
-                    previous_story,
-            )
-        )
-
-
-        print(
-            "[TIMING] Claude:",
-            f"{time.perf_counter() - ai_started:.2f}s"
+            analyses[
+                story_number
+            ]
         )
 
 
         # =================================================
-        # SAVE / UPDATE LIVING STORY
+        # EXISTING STORY
         # =================================================
-
-        print()
-        print(
-            "[5] UPDATING STORY MEMORY"
-        )
-
 
         if matched_story:
 
@@ -523,10 +1024,6 @@ def run_orchestrator(
                 analysis.delta
             )
 
-
-            # =============================================
-            # DELTA FALLBACK
-            # =============================================
 
             if delta is None:
 
@@ -572,8 +1069,7 @@ def run_orchestrator(
 
 
             # =============================================
-            # IF UPDATE FAILED
-            # CREATE NEW STORY SAFELY
+            # UPDATE FAILED
             # =============================================
 
             if saved_story is None:
@@ -602,6 +1098,7 @@ def run_orchestrator(
                     "CREATED"
                 )
 
+
                 new_story_count += 1
 
 
@@ -611,8 +1108,13 @@ def run_orchestrator(
                     "UPDATED"
                 )
 
+
                 updated_story_count += 1
 
+
+        # =================================================
+        # NEW STORY
+        # =================================================
 
         else:
 
@@ -643,20 +1145,12 @@ def run_orchestrator(
                 "CREATED"
             )
 
+
             new_story_count += 1
 
 
         # =================================================
-        # PREVENT SAME MEMORY MATCH TWICE
-        # =================================================
-
-        used_story_ids.add(
-            saved_story.story_id
-        )
-
-
-        # =================================================
-        # EVIDENCE MESSAGE
+        # EVIDENCE NOTE
         # =================================================
 
         if (
@@ -666,9 +1160,9 @@ def run_orchestrator(
         ):
 
             evidence_note = (
-                "Multi-source evidence analysis "
-                "completed by the NewsPulse "
-                "LangChain agent."
+                "Multi-source evidence "
+                "analysis completed by "
+                "NewsPulse."
             )
 
 
@@ -684,17 +1178,17 @@ def run_orchestrator(
         else:
 
             evidence_note = (
-                "The available sources were "
-                "not sufficient for a reliable "
-                "evidence conclusion."
+                "Available sources were "
+                "insufficient for reliable "
+                "multi-source evidence analysis."
             )
 
 
         # =================================================
-        # FRONTEND RESPONSE
+        # RESPONSE STORY
         # =================================================
 
-        orchestrated_story = (
+        orchestrated_results.append(
             OrchestratedStory(
 
                 cluster_id=
@@ -742,32 +1236,35 @@ def run_orchestrator(
         )
 
 
-        analyzed_results.append(
-            orchestrated_story
-        )
+    save_time = (
+        time.perf_counter()
+        - save_started
+    )
 
 
-        print(
-            "Story completed in:",
-            f"{time.perf_counter() - story_started:.2f}s"
-        )
-
-        print(
-            "Memory action:",
-            memory_action
-        )
+    print(
+        "[TIMING] Memory save:",
+        f"{save_time:.2f}s"
+    )
 
 
     # =====================================================
     # FINAL RESPONSE
     # =====================================================
 
+    total_time = (
+        time.perf_counter()
+        - total_started
+    )
+
+
     response = (
         OrchestratorResponse(
 
             agent_name=(
-                "NewsPulse Role-Based Fast "
-                "LangChain Intelligence Agent"
+                "NewsPulse High-Speed "
+                "Role-Based LangChain "
+                "Intelligence Agent"
             ),
 
             total_articles_collected=
@@ -779,7 +1276,7 @@ def run_orchestrator(
 
             analyzed_stories=
                 len(
-                    analyzed_results
+                    orchestrated_results
                 ),
 
             new_stories_created=
@@ -792,14 +1289,8 @@ def run_orchestrator(
                 selected_role,
 
             stories=
-                analyzed_results,
+                orchestrated_results,
         )
-    )
-
-
-    total_time = (
-        time.perf_counter()
-        - total_started
     )
 
 
@@ -819,21 +1310,43 @@ def run_orchestrator(
 
     print(
         "Articles:",
-        response.total_articles_collected
+        len(articles)
     )
 
     print(
-        "Clusters:",
-        response.total_story_clusters
+        "Stories analyzed:",
+        len(
+            orchestrated_results
+        )
     )
 
     print(
-        "Analyzed:",
-        response.analyzed_stories
+        "Collection:",
+        f"{collection_time:.2f}s"
     )
 
     print(
-        "Total time:",
+        "Clustering:",
+        f"{clustering_time:.2f}s"
+    )
+
+    print(
+        "Matching:",
+        f"{matching_time:.2f}s"
+    )
+
+    print(
+        "AI:",
+        f"{ai_time:.2f}s"
+    )
+
+    print(
+        "Memory save:",
+        f"{save_time:.2f}s"
+    )
+
+    print(
+        "TOTAL:",
         f"{total_time:.2f}s"
     )
 

@@ -1,0 +1,1600 @@
+/* =========================================================
+   NEWSPULSE AI
+   STORY DNA + SOURCE INTELLIGENCE
+   ========================================================= */
+
+
+:root {
+
+  --dna-bg:
+    #020611;
+
+  --dna-panel:
+    rgba(9, 19, 40, 0.94);
+
+  --dna-panel-soft:
+    rgba(13, 27, 56, 0.78);
+
+  --dna-blue:
+    #4169e1;
+
+  --dna-blue-light:
+    #7292ff;
+
+  --dna-electric:
+    #47b1ff;
+
+  --dna-gold:
+    #d7b65d;
+
+  --dna-green:
+    #55e6a5;
+
+  --dna-red:
+    #ff6b80;
+
+  --dna-white:
+    #f6f8ff;
+
+  --dna-muted:
+    #8195bc;
+
+}
+
+
+
+/* =========================================================
+   FLOATING LAUNCHER
+   ========================================================= */
+
+.np-dna-launcher {
+
+  position: fixed;
+
+  right: 22px;
+
+  bottom: 105px;
+
+  z-index: 5000;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    8px 13px
+    8px 8px;
+
+  cursor: pointer;
+
+  border:
+    1px solid
+    rgba(215, 182, 93, 0.34);
+
+  border-radius:
+    999px;
+
+  color:
+    var(--dna-white);
+
+  background:
+
+    linear-gradient(
+      135deg,
+      rgba(16, 35, 75, 0.97),
+      rgba(4, 14, 32, 0.97)
+    );
+
+  box-shadow:
+
+    0 16px 42px
+    rgba(0, 0, 0, 0.34),
+
+    0 0 30px
+    rgba(65, 105, 225, 0.12);
+
+  backdrop-filter:
+    blur(18px);
+
+  transition:
+
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+
+}
+
+
+.np-dna-launcher:hover {
+
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(215, 182, 93, 0.60);
+
+  box-shadow:
+
+    0 22px 48px
+    rgba(0, 0, 0, 0.40),
+
+    0 0 35px
+    rgba(65, 105, 225, 0.22);
+
+}
+
+
+.np-dna-launcher-core {
+
+  width: 38px;
+
+  height: 38px;
+
+  display: grid;
+
+  place-items: center;
+
+  position: relative;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(238, 217, 145, 0.45);
+
+  border-radius:
+    12px;
+
+  color:
+    white;
+
+  background:
+
+    radial-gradient(
+      circle at 35% 25%,
+      #9eb4ff,
+      #6688ff 28%,
+      #4169e1 58%,
+      #18347c
+    );
+
+  box-shadow:
+
+    0 0 20px
+    rgba(102, 136, 255, 0.45);
+
+  font-size:
+    8px;
+
+  font-weight: 900;
+
+  letter-spacing:
+    0.7px;
+
+}
+
+
+.np-dna-launcher-core::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 45px;
+
+  height: 7px;
+
+  left: -45px;
+
+  top: 9px;
+
+  transform:
+    rotate(-40deg);
+
+  background:
+    rgba(255, 255, 255, 0.32);
+
+  filter:
+    blur(3px);
+
+  animation:
+    npDnaShine
+    3s ease-in-out infinite;
+
+}
+
+
+.np-dna-launcher-text {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  color:
+    #8397bf;
+
+  font-size:
+    6px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    1.2px;
+
+}
+
+
+.np-dna-launcher-text strong {
+
+  margin-top:
+    2px;
+
+  color:
+    var(--dna-gold);
+
+  font-size:
+    8px;
+
+}
+
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.np-dna-backdrop {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 8998;
+
+  visibility: hidden;
+
+  opacity: 0;
+
+  background:
+    rgba(0, 3, 10, 0.68);
+
+  backdrop-filter:
+    blur(7px);
+
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+
+}
+
+
+.np-dna-backdrop.active {
+
+  visibility: visible;
+
+  opacity: 1;
+
+}
+
+
+
+/* =========================================================
+   DRAWER
+   ========================================================= */
+
+.np-dna-drawer {
+
+  position: fixed;
+
+  top: 0;
+
+  right: 0;
+
+  bottom: 0;
+
+  z-index: 8999;
+
+  width:
+    min(
+      470px,
+      100vw
+    );
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  transform:
+    translateX(105%);
+
+  border-left:
+    1px solid
+    rgba(111, 146, 255, 0.25);
+
+  color:
+    var(--dna-white);
+
+  background:
+
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(65, 105, 225, 0.19),
+      transparent 30%
+    ),
+
+    linear-gradient(
+      180deg,
+      rgba(3, 9, 21, 0.99),
+      rgba(5, 15, 34, 0.99)
+    );
+
+  box-shadow:
+
+    -35px 0 100px
+    rgba(0, 0, 0, 0.48);
+
+  transition:
+    transform 0.42s
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    );
+
+}
+
+
+.np-dna-drawer.active {
+
+  transform:
+    translateX(0);
+
+}
+
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.np-dna-drawer-header {
+
+  min-height:
+    78px;
+
+  padding:
+    18px 19px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  border-bottom:
+    1px solid
+    rgba(107, 141, 223, 0.15);
+
+  background:
+    rgba(3, 11, 26, 0.75);
+
+  backdrop-filter:
+    blur(20px);
+
+}
+
+
+.np-dna-eyebrow {
+
+  color:
+    var(--dna-gold);
+
+  font-size:
+    6px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    1.8px;
+
+}
+
+
+.np-dna-drawer-header h2 {
+
+  margin:
+    4px 0 0;
+
+  color:
+    white;
+
+  font-size:
+    24px;
+
+  letter-spacing:
+    -0.8px;
+
+}
+
+
+.np-dna-drawer-header h2 span {
+
+  margin-left:
+    5px;
+
+  color:
+    var(--dna-gold);
+
+}
+
+
+.np-dna-close {
+
+  width:
+    37px;
+
+  height:
+    37px;
+
+  cursor:
+    pointer;
+
+  border:
+    1px solid
+    rgba(115, 146, 222, 0.18);
+
+  border-radius:
+    11px;
+
+  color:
+    #9fb1d3;
+
+  background:
+    rgba(14, 30, 57, 0.72);
+
+  font-size:
+    22px;
+
+  line-height: 1;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+
+}
+
+
+.np-dna-close:hover {
+
+  transform:
+    rotate(5deg);
+
+  border-color:
+    rgba(215, 182, 93, 0.4);
+
+}
+
+
+
+/* =========================================================
+   STORY SELECTOR
+   ========================================================= */
+
+.np-dna-story-selector {
+
+  display: flex;
+
+  gap: 7px;
+
+  padding:
+    11px 18px;
+
+  overflow-x: auto;
+
+  border-bottom:
+    1px solid
+    rgba(99, 133, 211, 0.10);
+
+}
+
+
+.np-dna-story-selector button {
+
+  min-width:
+    34px;
+
+  height:
+    30px;
+
+  cursor:
+    pointer;
+
+  border:
+    1px solid
+    rgba(105, 140, 225, 0.17);
+
+  border-radius:
+    8px;
+
+  color:
+    #7187b2;
+
+  background:
+    rgba(13, 28, 57, 0.55);
+
+  font-size:
+    7px;
+
+  font-weight:
+    900;
+
+  transition:
+    0.2s ease;
+
+}
+
+
+.np-dna-story-selector button.active {
+
+  border-color:
+    rgba(215, 182, 93, 0.45);
+
+  color:
+    white;
+
+  background:
+
+    linear-gradient(
+      135deg,
+      rgba(215, 182, 93, 0.12),
+      rgba(65, 105, 225, 0.18)
+    );
+
+  box-shadow:
+    0 0 18px
+    rgba(65, 105, 225, 0.10);
+
+}
+
+
+
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
+.np-dna-scroll {
+
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding:
+    18px;
+
+}
+
+
+
+/* =========================================================
+   STORY HEADING
+   ========================================================= */
+
+.np-dna-story-heading {
+
+  padding:
+    4px 2px 18px;
+
+}
+
+
+.np-dna-story-heading > span {
+
+  color:
+    var(--dna-gold);
+
+  font-size:
+    6px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    1.5px;
+
+}
+
+
+.np-dna-story-heading h3 {
+
+  margin:
+    7px 0 8px;
+
+  color:
+    white;
+
+  font-size:
+    19px;
+
+  line-height:
+    1.25;
+
+}
+
+
+.np-dna-story-heading p {
+
+  margin: 0;
+
+  color:
+    #8699bc;
+
+  font-size:
+    10px;
+
+  line-height:
+    1.55;
+
+}
+
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.np-dna-panel,
+.np-source-intelligence-panel {
+
+  position: relative;
+
+  overflow: hidden;
+
+  margin-bottom:
+    15px;
+
+  padding:
+    16px;
+
+  border:
+    1px solid
+    rgba(102, 137, 225, 0.19);
+
+  border-radius:
+    16px;
+
+  background:
+
+    linear-gradient(
+      145deg,
+      rgba(14, 30, 59, 0.83),
+      rgba(6, 17, 36, 0.92)
+    );
+
+  box-shadow:
+
+    0 18px 45px
+    rgba(0, 0, 0, 0.20);
+
+}
+
+
+.np-dna-panel::before,
+.np-source-intelligence-panel::before {
+
+  content: "";
+
+  position: absolute;
+
+  left:
+    12%;
+
+  right:
+    12%;
+
+  top: 0;
+
+  height: 1px;
+
+  background:
+
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--dna-blue-light),
+      var(--dna-gold),
+      transparent
+    );
+
+  opacity:
+    0.55;
+
+}
+
+
+
+/* =========================================================
+   SECTION HEADING
+   ========================================================= */
+
+.np-dna-section-heading {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    12px;
+
+  margin-bottom:
+    14px;
+
+}
+
+
+.np-dna-section-heading span {
+
+  color:
+    #7187b1;
+
+  font-size:
+    5.5px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    1.3px;
+
+}
+
+
+.np-dna-section-heading h3 {
+
+  margin:
+    3px 0 0;
+
+  color:
+    white;
+
+  font-size:
+    16px;
+
+}
+
+
+
+/* =========================================================
+   DNA SIGNAL
+   ========================================================= */
+
+.np-dna-pulse {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    3px;
+
+}
+
+
+.np-dna-pulse span {
+
+  width:
+    3px;
+
+  border-radius:
+    999px;
+
+  background:
+    var(--dna-blue-light);
+
+  box-shadow:
+    0 0 9px
+    rgba(102, 136, 255, 0.55);
+
+  animation:
+    npDnaSignal
+    0.8s ease-in-out infinite;
+
+}
+
+
+.np-dna-pulse span:nth-child(1) {
+
+  height:
+    12px;
+
+}
+
+
+.np-dna-pulse span:nth-child(2) {
+
+  height:
+    22px;
+
+  background:
+    var(--dna-gold);
+
+  animation-delay:
+    0.15s;
+
+}
+
+
+.np-dna-pulse span:nth-child(3) {
+
+  height:
+    15px;
+
+  animation-delay:
+    0.3s;
+
+}
+
+
+
+/* =========================================================
+   DNA GRID
+   ========================================================= */
+
+.np-dna-metrics {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap:
+    8px;
+
+}
+
+
+.np-dna-metric {
+
+  min-height:
+    70px;
+
+  padding:
+    10px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    space-between;
+
+  border:
+    1px solid
+    rgba(101, 136, 220, 0.13);
+
+  border-radius:
+    11px;
+
+  background:
+    rgba(7, 18, 39, 0.62);
+
+}
+
+
+.np-dna-metric span {
+
+  color:
+    #7187ad;
+
+  font-size:
+    6px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    0.8px;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+.np-dna-metric strong {
+
+  color:
+    #e9eeff;
+
+  font-size:
+    11px;
+
+  line-height:
+    1.1;
+
+}
+
+
+.np-dna-metric.high strong,
+.np-dna-metric.strong strong,
+.np-dna-metric.aligned strong {
+
+  color:
+    var(--dna-green);
+
+}
+
+
+.np-dna-metric.medium strong,
+.np-dna-metric.mixed strong,
+.np-dna-metric.impact strong {
+
+  color:
+    var(--dna-gold);
+
+}
+
+
+.np-dna-metric.low strong,
+.np-dna-metric.disputed strong {
+
+  color:
+    var(--dna-red);
+
+}
+
+
+.np-dna-metric.memory strong {
+
+  color:
+    #8ca5ff;
+
+}
+
+
+
+/* =========================================================
+   AGREEMENT BADGE
+   ========================================================= */
+
+.np-agreement-badge {
+
+  padding:
+    5px 8px;
+
+  border:
+    1px solid
+    rgba(105, 140, 225, 0.20);
+
+  border-radius:
+    999px;
+
+  color:
+    #a9bbdf;
+
+  background:
+    rgba(65, 105, 225, 0.07);
+
+  font-size:
+    6px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    0.8px;
+
+}
+
+
+.np-agreement-badge.strong,
+.np-agreement-badge.aligned {
+
+  border-color:
+    rgba(85, 230, 165, 0.25);
+
+  color:
+    var(--dna-green);
+
+}
+
+
+.np-agreement-badge.mixed {
+
+  border-color:
+    rgba(215, 182, 93, 0.28);
+
+  color:
+    var(--dna-gold);
+
+}
+
+
+.np-agreement-badge.disputed {
+
+  border-color:
+    rgba(255, 107, 128, 0.25);
+
+  color:
+    var(--dna-red);
+
+}
+
+
+
+/* =========================================================
+   EVIDENCE SUMMARY
+   ========================================================= */
+
+.np-evidence-summary {
+
+  margin-bottom:
+    13px;
+
+  padding:
+    11px;
+
+  border-left:
+    2px solid
+    var(--dna-blue-light);
+
+  border-radius:
+    0 9px 9px 0;
+
+  background:
+    rgba(65, 105, 225, 0.055);
+
+}
+
+
+.np-evidence-summary p {
+
+  margin:
+    0;
+
+  color:
+    #b0bfde;
+
+  font-size:
+    9px;
+
+  line-height:
+    1.5;
+
+}
+
+
+.np-evidence-summary small {
+
+  display:
+    block;
+
+  margin-top:
+    7px;
+
+  color:
+    #7185aa;
+
+  font-size:
+    7px;
+
+  line-height:
+    1.45;
+
+}
+
+
+
+/* =========================================================
+   SOURCE GROUPS
+   ========================================================= */
+
+.np-intelligence-group {
+
+  margin-top:
+    9px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(105, 137, 211, 0.12);
+
+  border-radius:
+    11px;
+
+  background:
+    rgba(4, 14, 31, 0.60);
+
+}
+
+
+.np-intelligence-group-title {
+
+  min-height:
+    38px;
+
+  padding:
+    9px 10px;
+
+  display:
+    grid;
+
+  grid-template-columns:
+    23px
+    1fr
+    auto;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  border-bottom:
+    1px solid
+    rgba(101, 132, 205, 0.08);
+
+  color:
+    #a8b9d9;
+
+  font-size:
+    7px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    0.5px;
+
+}
+
+
+.np-intelligence-group-title strong {
+
+  min-width:
+    21px;
+
+  height:
+    21px;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  border-radius:
+    7px;
+
+  background:
+    rgba(65, 105, 225, 0.10);
+
+  color:
+    #9cb1e6;
+
+  font-size:
+    7px;
+
+}
+
+
+.np-intelligence-group-icon {
+
+  width:
+    22px;
+
+  height:
+    22px;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  border-radius:
+    7px;
+
+  font-size:
+    10px;
+
+}
+
+
+.np-intelligence-group.supporting
+.np-intelligence-group-icon {
+
+  color:
+    var(--dna-green);
+
+  background:
+    rgba(85, 230, 165, 0.08);
+
+}
+
+
+.np-intelligence-group.contradicting
+.np-intelligence-group-icon {
+
+  color:
+    var(--dna-red);
+
+  background:
+    rgba(255, 107, 128, 0.08);
+
+}
+
+
+.np-intelligence-group.neutral
+.np-intelligence-group-icon {
+
+  color:
+    #93a9da;
+
+  background:
+    rgba(112, 145, 220, 0.08);
+
+}
+
+
+.np-intelligence-group.uncertain
+.np-intelligence-group-icon {
+
+  color:
+    var(--dna-gold);
+
+  background:
+    rgba(215, 182, 93, 0.08);
+
+}
+
+
+
+/* =========================================================
+   ITEMS
+   ========================================================= */
+
+.np-intelligence-list {
+
+  padding:
+    6px 9px;
+
+}
+
+
+.np-intelligence-item {
+
+  display: flex;
+
+  align-items:
+    flex-start;
+
+  gap:
+    8px;
+
+  padding:
+    7px 3px;
+
+}
+
+
+.np-intelligence-dot {
+
+  width:
+    5px;
+
+  height:
+    5px;
+
+  flex:
+    0 0 auto;
+
+  margin-top:
+    5px;
+
+  border-radius:
+    50%;
+
+  background:
+    var(--dna-blue-light);
+
+  box-shadow:
+    0 0 7px
+    rgba(102, 136, 255, 0.45);
+
+}
+
+
+.supporting
+.np-intelligence-dot {
+
+  background:
+    var(--dna-green);
+
+}
+
+
+.contradicting
+.np-intelligence-dot {
+
+  background:
+    var(--dna-red);
+
+}
+
+
+.uncertain
+.np-intelligence-dot {
+
+  background:
+    var(--dna-gold);
+
+}
+
+
+.np-intelligence-item p {
+
+  margin: 0;
+
+  color:
+    #98aacb;
+
+  font-size:
+    8px;
+
+  line-height:
+    1.5;
+
+}
+
+
+.np-intelligence-empty {
+
+  padding:
+    10px;
+
+  color:
+    #536989;
+
+  font-size:
+    7px;
+
+  font-style:
+    italic;
+
+}
+
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.np-dna-footer {
+
+  padding:
+    6px 4px
+    18px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap:
+    7px;
+
+  color:
+    #586d92;
+
+  font-size:
+    6px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    0.5px;
+
+}
+
+
+.np-dna-live-dot {
+
+  width:
+    6px;
+
+  height:
+    6px;
+
+  border-radius:
+    50%;
+
+  background:
+    var(--dna-green);
+
+  box-shadow:
+    0 0 10px
+    rgba(85, 230, 165, 0.75);
+
+  animation:
+    npDnaLive
+    1s ease-in-out infinite;
+
+}
+
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes npDnaSignal {
+
+  0%,
+  100% {
+
+    transform:
+      scaleY(0.65);
+
+    opacity:
+      0.55;
+
+  }
+
+  50% {
+
+    transform:
+      scaleY(1);
+
+    opacity:
+      1;
+
+  }
+
+}
+
+
+@keyframes npDnaLive {
+
+  0%,
+  100% {
+
+    transform:
+      scale(1);
+
+    opacity:
+      1;
+
+  }
+
+  50% {
+
+    transform:
+      scale(1.4);
+
+    opacity:
+      0.45;
+
+  }
+
+}
+
+
+@keyframes npDnaShine {
+
+  0%,
+  50% {
+
+    left:
+      -45px;
+
+  }
+
+  80%,
+  100% {
+
+    left:
+      65px;
+
+  }
+
+}
+
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+  max-width: 650px
+) {
+
+  .np-dna-launcher {
+
+    right:
+      12px;
+
+    bottom:
+      165px;
+
+  }
+
+
+  .np-dna-launcher-text {
+
+    display:
+      none;
+
+  }
+
+
+  .np-dna-launcher {
+
+    padding:
+      7px;
+
+  }
+
+
+  .np-dna-metrics {
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+
+  .np-dna-launcher *,
+  .np-dna-drawer * {
+
+    animation-duration:
+      0.01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+  }
+
+}
